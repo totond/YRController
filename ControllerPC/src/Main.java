@@ -1,3 +1,4 @@
+import connection.ConnetManager;
 import ui.MainFrame;
 
 import javax.swing.*;
@@ -9,6 +10,8 @@ public class Main {
 
     public static void main(String[] args) {
         MainFrame mainFrame = new MainFrame();
+        ConnetManager connetManager = new ConnetManager();
+        mainFrame.setIps(connetManager.getIpList());
     }
 
 
