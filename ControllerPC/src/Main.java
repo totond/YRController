@@ -1,17 +1,20 @@
-import connection.ConnetManager;
+import connection.ConnectManager;
 import ui.MainFrame;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 public class Main {
 
+    private static ConnectManager sConnectManager;
+
     public static void main(String[] args) {
+        sConnectManager = new ConnectManager();
+        SwingUtilities.invokeLater(() -> createGUI());
+    }
+
+    private static void createGUI(){
         MainFrame mainFrame = new MainFrame();
-        ConnetManager connetManager = new ConnetManager();
-        mainFrame.setIps(connetManager.getIpList());
+        mainFrame.setIps(sConnectManager.getIpList());
     }
 
 

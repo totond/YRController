@@ -2,10 +2,10 @@ package connection;
 
 import java.util.List;
 
-public class ConnetManager {
+public class ConnectManager {
     private List<String> ipList;
 
-    public ConnetManager(){
+    public ConnectManager(){
         init();
     }
 
