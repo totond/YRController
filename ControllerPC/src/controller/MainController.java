@@ -33,15 +33,15 @@ public class MainController {
             return false;
         }
         if (mWorkerThread == null || !mWorkerThread.isAlive()) {
-            mWorkerThread = new WorkerThread();
+            mWorkerThread = new WorkerThread(port);
         }
         mWorkerThread.start();
         return true;
     }
 
-    public void changeState(int state){
+    public void changeState(int state) {
         mState = state;
-        if (mStateChangedListener != null){
+        if (mStateChangedListener != null) {
             SwingUtilities.invokeLater(
                     new Runnable() {
                         @Override
@@ -59,36 +59,45 @@ public class MainController {
         private int mAction = ACTION_LISTEN;
         private int port;
 
-        public WorkerThread(int port){
+        private boolean mRunning = false;
+
+        public WorkerThread(int port) {
             this.port = port;
         }
 
-        public void startListen() throws IOException {
-            mServerSocket = new ServerSocket(port);
-            mState = STATE_LISTENING;
-            mServerSocket.accept();
-            mAction = ACTION_CONNECT;
+        public void startListen(){
+            try {
+                mServerSocket = new ServerSocket(port);
+                changeState(STATE_LISTENING);
+                mServerSocket.accept();
+                mAction = ACTION_CONNECT;
+            } catch (IOException e) {
+                System.out.println("此端口已经被占用！");
+                e.printStackTrace();
+            }
         }
 
         @Override
         public void run() {
-            switch (mAction){
-                case ACTION_LISTEN:
-                    try {
+            while (mRunning) {
+                switch (mAction) {
+                    case ACTION_LISTEN:
                         startListen();
-                    }catch (IOException e){
-                        System.out.println("此端口已经被占用！");
-                        e.printStackTrace();
-                    }
-                    break;
-                case ACTION_CONNECT:
-                    mState = STATE_CONNECTED;
-                    break;
-                case ACTION_DISCONNECT:
-
-                    break;
+                        break;
+                    case ACTION_CONNECT:
+                        changeState(STATE_CONNECTED);
+                        break;
+                    case ACTION_DISCONNECT:
+                        changeState(STATE_IDLE);
+                        mRunning = false;
+                        break;
+                }
             }
         }
+
+    }
+
+    private class ListenThread extends Thread{
 
     }
 
