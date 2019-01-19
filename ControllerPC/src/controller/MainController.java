@@ -1,9 +1,13 @@
 package controller;
 
 import connection.ConnectManager;
+import controller.message.Message;
+import controller.message.MessageManager;
 import ui.MainFrame;
 
 import javax.swing.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -19,8 +23,10 @@ public class MainController {
     private int mState = STATE_IDLE;
 
     private ConnectManager mConnectManager;
+    private MessageManager mMessageManager;
     private MainFrame mMainFrame;
     private WorkerThread mWorkerThread;
+    private ListenThread mListenThread;
     private OnStateChangedListener mStateChangedListener;
 
     public MainController(MainFrame mainFrame, ConnectManager connectManager) {
@@ -32,10 +38,10 @@ public class MainController {
         if (mState != STATE_IDLE) {
             return false;
         }
-        if (mWorkerThread == null || !mWorkerThread.isAlive()) {
-            mWorkerThread = new WorkerThread(port);
+        if (mListenThread == null || !mListenThread.isAlive()) {
+            mListenThread = new ListenThread(port);
         }
-        mWorkerThread.start();
+        mListenThread.start();
         return true;
     }
 
@@ -43,25 +49,66 @@ public class MainController {
         mState = state;
         if (mStateChangedListener != null) {
             SwingUtilities.invokeLater(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            // 此处处于 事件调度线程
-                            mStateChangedListener.onStateChanged(mState);
-                        }
+                    () -> {
+                        // 此处处于 事件调度线程
+                        mStateChangedListener.onStateChanged(mState);
                     }
             );
         }
     }
 
-    private class WorkerThread extends Thread {
-        private ServerSocket mServerSocket;
-        private int mAction = ACTION_LISTEN;
+    public void stop(){
+        switch (mState){
+            case STATE_LISTENING:
+                mListenThread.stopSocket();
+                break;
+            case STATE_CONNECTED:
+                mWorkerThread.stopWorking();
+                break;
+        }
+        changeState(STATE_IDLE);
+    }
+
+    private class WorkerThread extends RunningThread {
+
+        private BufferedReader mBufferedReader;
+
+        public WorkerThread(BufferedReader bufferedReader){
+            mBufferedReader = bufferedReader;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            while (mRunning){
+                try {
+                    String result = mBufferedReader.readLine();
+                    if (result != null && result.length() > 0){
+                        mMessageManager.handleMessage(new Message(result));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void stopWorking() {
+            if (mBufferedReader != null){
+                try {
+                    mBufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private class ListenThread extends RunningThread{
         private int port;
+        private ServerSocket mServerSocket;
 
-        private boolean mRunning = false;
-
-        public WorkerThread(int port) {
+        public ListenThread(int port) {
             this.port = port;
         }
 
@@ -70,7 +117,6 @@ public class MainController {
                 mServerSocket = new ServerSocket(port);
                 changeState(STATE_LISTENING);
                 mServerSocket.accept();
-                mAction = ACTION_CONNECT;
             } catch (IOException e) {
                 System.out.println("此端口已经被占用！");
                 e.printStackTrace();
@@ -79,26 +125,18 @@ public class MainController {
 
         @Override
         public void run() {
-            while (mRunning) {
-                switch (mAction) {
-                    case ACTION_LISTEN:
-                        startListen();
-                        break;
-                    case ACTION_CONNECT:
-                        changeState(STATE_CONNECTED);
-                        break;
-                    case ACTION_DISCONNECT:
-                        changeState(STATE_IDLE);
-                        mRunning = false;
-                        break;
-                }
-            }
+            super.run();
+            startListen();
+            changeState(STATE_CONNECTED);
         }
 
-    }
-
-    private class ListenThread extends Thread{
-
+        public void stopSocket(){
+            try {
+                mServerSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public interface OnStateChangedListener {
