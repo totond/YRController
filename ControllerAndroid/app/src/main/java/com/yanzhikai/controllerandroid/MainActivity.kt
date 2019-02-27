@@ -8,7 +8,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        init()
+    }
+
+    fun init(){
         btn_control.setOnClickListener { jumpToControl() }
+        setState()
+    }
+
+    private fun setState(state: Int){
+        when (state) {
+            STATE_CONNECTED -> {
+                btn_control.isEnabled = true
+                btn_connect.isEnabled = false
+                et_ip.isEnabled = false
+                tv_state.text = "已连接"
+            }
+            STATE_DISCONNECT -> {
+                btn_control.isEnabled = false
+                btn_connect.isEnabled = true
+                et_ip.isEnabled = true
+                tv_state.text = "未连接"
+            }
+        }
     }
 
     private fun jumpToControl(){
