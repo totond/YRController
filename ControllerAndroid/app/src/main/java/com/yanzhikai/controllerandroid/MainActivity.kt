@@ -13,7 +13,13 @@ class MainActivity : AppCompatActivity() {
 
     fun init(){
         btn_control.setOnClickListener { jumpToControl() }
-        setState()
+        btn_connect.setOnClickListener { connect() }
+        setState(ConnectManager.state)
+    }
+
+    fun connect(){
+        ConnectManager.getInstance().configure(et_ip.text.toString(), 9999)
+        ConnectManager.getInstance().init()
     }
 
     private fun setState(state: Int){
