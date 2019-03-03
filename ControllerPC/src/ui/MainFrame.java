@@ -1,6 +1,7 @@
 package ui;
 
 import connection.StateUtil;
+import controller.MainController;
 import gobal.ConstantStrings;
 
 import javax.swing.*;
@@ -25,6 +26,8 @@ public class MainFrame extends JFrame {
     private JTextField tfPort;
     private JTextArea taState;
 
+    private MainController mMainController;
+
     private int state = STATE_IDLE;
 
     public MainFrame(){
@@ -35,7 +38,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         mainBox = Box.createVerticalBox();
-        group1 = Box.createHorizontalBox();;
+        group1 = Box.createHorizontalBox();
 
         initGroup1();
 //        initGroup2();
@@ -48,6 +51,9 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
+    public void setMainController(MainController mainController) {
+        mMainController = mainController;
+    }
 
     private void initGroup1(){
         btnControl = new JButton(LISTEN_START);
@@ -110,16 +116,19 @@ public class MainFrame extends JFrame {
         }
     }
 
-    public void updateControlBtn(){
+    public void updateControlBtn(int state){
+        this.state = state;
         switch (state){
             case STATE_IDLE:
                 btnControl.setText(LISTEN_START);
                 break;
             case STATE_LISTENING:
                 btnControl.setText(LISTEN_STOP);
+
                 break;
             case STATE_CONNECTED:
                 btnControl.setText(DISCONNENT);
+
                 break;
             default:
                 btnControl.setText(LISTEN_START);
@@ -127,11 +136,28 @@ public class MainFrame extends JFrame {
         }
     }
 
+    private void onBtnClick(){
+        switch (state){
+            case STATE_IDLE:
+                mMainController.startListen(9999);
+                break;
+            case STATE_LISTENING:
+                mMainController.stop();
+                break;
+            case STATE_CONNECTED:
+                mMainController.stop();
+                break;
+
+        }
+    }
+
     private final ActionListener controllActionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            state = StateUtil.getNextState(state);
-            updateControlBtn();
+            onBtnClick();
+            // state = StateUtil.getNextState(state);
+            // updateControlBtn();
+
         }
     };
 }

@@ -9,7 +9,9 @@ import javax.swing.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class MainController {
     public static final int STATE_IDLE = 0;
@@ -47,14 +49,20 @@ public class MainController {
 
     public void changeState(int state) {
         mState = state;
-        if (mStateChangedListener != null) {
-            SwingUtilities.invokeLater(
-                    () -> {
-                        // 此处处于 事件调度线程
-                        mStateChangedListener.onStateChanged(mState);
-                    }
-            );
-        }
+        // if (mStateChangedListener != null) {
+        //     SwingUtilities.invokeLater(
+        //             () -> {
+        //                 // 此处处于 事件调度线程
+        //                 mStateChangedListener.onStateChanged(mState);
+        //             }
+        //     );
+        // }
+        SwingUtilities.invokeLater(
+                () -> {
+                    // 此处处于 事件调度线程
+                    mMainFrame.updateControlBtn(mState);
+                }
+        );
     }
 
     public void stop(){
@@ -82,6 +90,7 @@ public class MainController {
             super.run();
             while (mRunning){
                 try {
+                    System.out.println("working");
                     String result = mBufferedReader.readLine();
                     if (result != null && result.length() > 0){
                         mMessageManager.handleMessage(new Message(result));
@@ -116,7 +125,9 @@ public class MainController {
             try {
                 mServerSocket = new ServerSocket(port);
                 changeState(STATE_LISTENING);
-                mServerSocket.accept();
+                System.out.println("listening");
+                Socket socket = mServerSocket.accept();
+                mWorkerThread = new WorkerThread(new BufferedReader(new InputStreamReader(socket.getInputStream())));
             } catch (IOException e) {
                 System.out.println("此端口已经被占用！");
                 e.printStackTrace();
@@ -133,6 +144,8 @@ public class MainController {
         public void stopSocket(){
             try {
                 mServerSocket.close();
+                System.out.println("stop");
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
