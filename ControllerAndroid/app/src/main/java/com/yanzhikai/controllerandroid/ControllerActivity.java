@@ -1,5 +1,6 @@
 package com.yanzhikai.controllerandroid;
 
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -23,8 +24,8 @@ public class ControllerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_controller);
         initData();
         initView();
-    }
 
+    }
     private void initData() {
         mCommandInfoList = new ArrayList<>();
         mCommandInfoList.add(new CommandInfo(10001, "关机", STATE_ENABLE));
@@ -44,7 +45,9 @@ public class ControllerActivity extends AppCompatActivity {
     private BaseQuickAdapter.OnItemClickListener mItemClickListener = new BaseQuickAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-
+            CommandInfo commandInfo = mCommandInfoList.get(position);
+            ConnectManager.getInstance().sendCommand(commandInfo.getId() + "\n");
         }
     };
+
 }

@@ -2,6 +2,7 @@ package com.yanzhikai.controllerandroid
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -11,18 +12,20 @@ class MainActivity : AppCompatActivity() {
         init()
     }
 
-    fun init(){
+    fun init() {
         btn_control.setOnClickListener { jumpToControl() }
         btn_connect.setOnClickListener { connect() }
         setState(ConnectManager.state)
     }
 
-    fun connect(){
-        ConnectManager.getInstance().configure(et_ip.text.toString(), 9999)
+    fun connect() {
+        ConnectManager.getInstance().setConnectListener(mConnectListener)
+        ConnectManager.getInstance().configure(et_ip.text.toString(), 9998)
         ConnectManager.getInstance().init()
     }
 
-    private fun setState(state: Int){
+    private fun setState(state: Int) {
+        Log.i("yjk", "state: $state Thread: " + Thread.currentThread().name)
         when (state) {
             STATE_CONNECTED -> {
                 btn_control.isEnabled = true
@@ -39,8 +42,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun jumpToControl(){
-        ActivityJumpUtil.jumpToActivity(this,ControllerActivity::class.java)
+    private fun jumpToControl() {
+        ActivityJumpUtil.jumpToActivity(this, ControllerActivity::class.java)
     }
 
+    private val mConnectListener = object : ConnectManager.ConnectListener {
+        override fun onSocketChanged(state: Int) {
+            setState(state)
+        }
+
+    }
 }

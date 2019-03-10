@@ -6,15 +6,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import static com.yanzhikai.controllerandroid.ConstantKt.STATE_CONNECTED;
-import static com.yanzhikai.controllerandroid.ConstantKt.STATE_DISCONNECT;
+import static com.yanzhikai.controllerandroid.ConstantKt.*;
 
 public class ConnectManager {
     public static final String TAG = "yjk" + ConnectManager.class.getName();
@@ -29,7 +26,9 @@ public class ConnectManager {
 
     private Handler mHandler;
 
-    private int mPort = 9999;
+    private int mPort = 9998;
+
+    private ConnectListener mConnectListener;
 
     public static int state = STATE_DISCONNECT;
 
@@ -50,7 +49,8 @@ public class ConnectManager {
     }
 
     public void init() {
-        mHandler = new Handler(Looper.getMainLooper());
+        Log.i(TAG, "init: ");
+        mHandler = new MainHandler(Looper.getMainLooper());
         connectThread = new HandlerThread("ConnectThread") {
             @Override
             protected void onLooperPrepared() {
@@ -59,8 +59,10 @@ public class ConnectManager {
                     InputStream is = null;
                     try {
                         is = mSocket.getInputStream();
+                        Log.d(TAG, "onLooperPrepared: ");
 
                         state = STATE_CONNECTED;
+                        onStateChange();
                         while (state == STATE_CONNECTED) {
                             InputStreamReader isReader = new InputStreamReader(is);
                             BufferedReader bufferedReader = new BufferedReader(isReader);
@@ -70,46 +72,83 @@ public class ConnectManager {
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
+                        Log.e(TAG, "onLooperPrepared: ", e);
                     }finally {
                         state = STATE_DISCONNECT;
                     }
                 }
             }
         };
+        connectThread.start();
 
+    }
+
+    private void onStateChange(){
+        Message message = mHandler.obtainMessage();
+        message.what = MSG_TYPE_COMMAND;
+        mHandler.sendMessage(message);
     }
 
     private void onMsg(String msg){
         Message message = mHandler.obtainMessage();
         message.what = 1;
         message.obj = msg;
-        mHandler.dispatchMessage(message);
+        mHandler.sendMessage(message);
+    }
+
+    public void sendCommand(String content) {
+        if (mSocket != null){
+            try {
+                OutputStream outputStream =  mSocket.getOutputStream();
+                outputStream.write(content.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean linkSocket() {
         try {
-            mSocket = new Socket(mHost, mPort);
-        } catch (IOException e) {
+            mSocket = new Socket();
+            SocketAddress address = new InetSocketAddress(mHost, mPort);
+            mSocket.connect(address, 1000);
+            Log.i(TAG, "linkSocket: " + mHost);
+        } catch (Throwable e) {
             e.printStackTrace();
+            Log.e(TAG, "linkSocket: ",e );
             return false;
         }
         return true;
     }
 
-    private class ConnectingRunnable implements Runnable {
 
-        @Override
-        public void run() {
 
-        }
+    public void setConnectListener(ConnectListener connectListener) {
+        mConnectListener = connectListener;
     }
 
     private class MainHandler extends Handler {
+        public MainHandler(Looper mainLooper) {
+            super(mainLooper);
+        }
+
         @Override
         public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_TYPE_COMMAND:
+                    if (mConnectListener != null){
+                        Log.i(TAG, "handleMessage: MSG_TYPE_COMMAND " + state);
+                        mConnectListener.onSocketChanged(state);
+                    }
+                    break;
+                case MSG_TYPE_STATE:
 
+                    break;
+            }
         }
     }
 
-
+    public interface ConnectListener {
+        void onSocketChanged(int state);
+    }
 }

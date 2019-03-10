@@ -139,7 +139,7 @@ public class MainFrame extends JFrame {
     private void onBtnClick(){
         switch (state){
             case STATE_IDLE:
-                mMainController.startListen(9999);
+                mMainController.startListen(9998);
                 break;
             case STATE_LISTENING:
                 mMainController.stop();

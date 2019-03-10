@@ -34,6 +34,7 @@ public class MainController {
     public MainController(MainFrame mainFrame, ConnectManager connectManager) {
         mMainFrame = mainFrame;
         mConnectManager = connectManager;
+        mMessageManager = new MessageManager();
     }
 
     public boolean startListen(int port) {
@@ -128,6 +129,7 @@ public class MainController {
                 System.out.println("listening");
                 Socket socket = mServerSocket.accept();
                 mWorkerThread = new WorkerThread(new BufferedReader(new InputStreamReader(socket.getInputStream())));
+                mWorkerThread.start();
             } catch (IOException e) {
                 System.out.println("此端口已经被占用！");
                 e.printStackTrace();
