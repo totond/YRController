@@ -81,9 +81,11 @@ public class MainController {
     private class WorkerThread extends RunningThread {
 
         private BufferedReader mBufferedReader;
+        private Socket mSocket;
 
-        public WorkerThread(BufferedReader bufferedReader){
-            mBufferedReader = bufferedReader;
+        public WorkerThread(Socket socket) throws IOException {
+            mSocket = socket;
+            mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
         }
 
         @Override
@@ -106,6 +108,7 @@ public class MainController {
             if (mBufferedReader != null){
                 try {
                     mBufferedReader.close();
+                    mSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -128,7 +131,7 @@ public class MainController {
                 changeState(STATE_LISTENING);
                 System.out.println("listening");
                 Socket socket = mServerSocket.accept();
-                mWorkerThread = new WorkerThread(new BufferedReader(new InputStreamReader(socket.getInputStream())));
+                mWorkerThread = new WorkerThread(socket);
                 mWorkerThread.start();
             } catch (IOException e) {
                 System.out.println("此端口已经被占用！");
