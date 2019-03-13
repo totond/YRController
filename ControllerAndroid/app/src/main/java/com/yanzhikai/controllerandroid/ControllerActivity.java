@@ -28,10 +28,12 @@ public class ControllerActivity extends AppCompatActivity {
     }
     private void initData() {
         mCommandInfoList = new ArrayList<>();
-        mCommandInfoList.add(new CommandInfo(10001, "关机", STATE_ENABLE));
+        mCommandInfoList.add(new CommandInfo(10001, "关屏幕", STATE_ENABLE));
         mCommandInfoList.add(new CommandInfo(10002, "上一首", STATE_ENABLE));
         mCommandInfoList.add(new CommandInfo(10003, "下一首", STATE_ENABLE));
         mCommandInfoList.add(new CommandInfo(10004, "播放/暂停", STATE_ENABLE));
+        mCommandInfoList.add(new CommandInfo(10005, "声音大一点", STATE_ENABLE));
+        mCommandInfoList.add(new CommandInfo(10006, "声音小一点", STATE_ENABLE));
     }
 
     private void initView(){

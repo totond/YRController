@@ -9,11 +9,11 @@ public class ScreenOffShortCut extends ShortCutCommand{
         id = "10001";
 
         pressList.add(VK_CONTROL);
-        pressList.add(VK_SHIFT);
+        pressList.add(VK_ALT);
         pressList.add(VK_B);
 
         releaseList.add(VK_B);
-        releaseList.add(VK_SHIFT);
+        releaseList.add(VK_ALT);
         releaseList.add(VK_CONTROL);
     }
 }

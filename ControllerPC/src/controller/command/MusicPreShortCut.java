@@ -9,11 +9,11 @@ public class MusicPreShortCut extends ShortCutCommand{
         id = "10002";
 
         pressList.add(VK_CONTROL);
-        pressList.add(VK_SHIFT);
-        pressList.add(VK_LEFT_PARENTHESIS);
+        pressList.add(VK_ALT);
+        pressList.add(VK_OPEN_BRACKET);
 
-        releaseList.add(VK_LEFT_PARENTHESIS);
-        releaseList.add(VK_SHIFT);
+        releaseList.add(VK_OPEN_BRACKET);
+        releaseList.add(VK_ALT);
         releaseList.add(VK_CONTROL);
     }
 }

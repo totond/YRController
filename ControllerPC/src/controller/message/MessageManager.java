@@ -27,6 +27,8 @@ public class MessageManager {
         mCommandHashMap.put("10002", new MusicPreShortCut());
         mCommandHashMap.put("10003", new MusicNextShortCut());
         mCommandHashMap.put("10004", new MusicPauseShortCut());
+        mCommandHashMap.put("10005", new MusicUpShortCut());
+        mCommandHashMap.put("10006", new MusicDownShortCut());
     }
 
     public void handleMessage(Message message){

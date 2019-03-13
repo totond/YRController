@@ -98,7 +98,7 @@ public class MainController {
                     if (result != null && result.length() > 0){
                         mMessageManager.handleMessage(new Message(result));
                     }
-                } catch (IOException e) {
+                } catch (IOException | NullPointerException e) {
                     e.printStackTrace();
                 }
             }
