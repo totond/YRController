@@ -43,6 +43,9 @@ public class MainController {
         }
         if (mListenThread == null || !mListenThread.isAlive()) {
             mListenThread = new ListenThread(port);
+        }else {
+            mListenThread.stopSocket();
+            mListenThread = new ListenThread(port);
         }
         mListenThread.start();
         return true;
@@ -97,14 +100,25 @@ public class MainController {
                     String result = mBufferedReader.readLine();
                     if (result != null && result.length() > 0){
                         mMessageManager.handleMessage(new Message(result));
+                    }else {
+                        System.out.println("null result");
+                        stopWorking();
                     }
                 } catch (IOException | NullPointerException e) {
+                    stopWorking();
                     e.printStackTrace();
                 }
             }
         }
 
         public void stopWorking() {
+            mRunning = false;
+            try {
+                join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             if (mBufferedReader != null){
                 try {
                     mBufferedReader.close();
@@ -113,6 +127,8 @@ public class MainController {
                     e.printStackTrace();
                 }
             }
+
+            startListen(9998);
         }
 
     }
@@ -120,6 +136,7 @@ public class MainController {
     private class ListenThread extends RunningThread{
         private int port;
         private ServerSocket mServerSocket;
+        private Socket mSocket;
 
         public ListenThread(int port) {
             this.port = port;
@@ -128,14 +145,24 @@ public class MainController {
         public void startListen(){
             try {
                 mServerSocket = new ServerSocket(port);
-                changeState(STATE_LISTENING);
-                System.out.println("listening");
-                Socket socket = mServerSocket.accept();
-                mWorkerThread = new WorkerThread(socket);
-                mWorkerThread.start();
             } catch (IOException e) {
-                System.out.println("此端口已经被占用！");
                 e.printStackTrace();
+                System.out.println("此端口已经被占用！");
+                return;
+            }
+            while (true) {
+                try {
+                    changeState(STATE_LISTENING);
+                    System.out.println("listening");
+                    mSocket = mServerSocket.accept();
+                    System.out.println("connect!");
+                    mWorkerThread = new WorkerThread(mSocket);
+                    mWorkerThread.start();
+                } catch (IOException e) {
+                    System.out.println("此端口已经被占用！");
+                    e.printStackTrace();
+                    break;
+                }
             }
         }
 
@@ -149,6 +176,7 @@ public class MainController {
         public void stopSocket(){
             try {
                 mServerSocket.close();
+                mSocket.close();
                 System.out.println("stop");
 
             } catch (IOException e) {

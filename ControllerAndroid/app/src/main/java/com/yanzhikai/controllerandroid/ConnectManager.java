@@ -5,11 +5,15 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.Schedulers;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.concurrent.Callable;
 
 import static com.yanzhikai.controllerandroid.ConstantKt.*;
 
@@ -96,15 +100,25 @@ public class ConnectManager {
         mHandler.sendMessage(message);
     }
 
-    public void sendCommand(String content) {
-        if (mSocket != null){
-            try {
-                OutputStream outputStream =  mSocket.getOutputStream();
-                outputStream.write(content.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
+    public void sendCommand(final String content) {
+        Observable.fromCallable(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                if (mSocket != null) {
+                    try {
+                        OutputStream outputStream = mSocket.getOutputStream();
+                        outputStream.write(content.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+                return true;
             }
-        }
+        })
+                .subscribeOn(Schedulers.io())
+                .subscribe();
+
     }
 
     private boolean linkSocket() {

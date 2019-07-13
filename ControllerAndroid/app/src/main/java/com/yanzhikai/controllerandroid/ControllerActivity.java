@@ -1,5 +1,6 @@
 package com.yanzhikai.controllerandroid;
 
+import android.content.Context;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.View;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.yanzhikai.controllerandroid.ConstantKt.STATE_ENABLE;
 
@@ -26,6 +28,12 @@ public class ControllerActivity extends AppCompatActivity {
         initView();
 
     }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(newBase);
+    }
+
     private void initData() {
         mCommandInfoList = new ArrayList<>();
         mCommandInfoList.add(new CommandInfo(10001, "关屏幕", STATE_ENABLE));
