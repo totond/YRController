@@ -6,6 +6,9 @@ import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private var currentIP: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -15,12 +18,14 @@ class MainActivity : AppCompatActivity() {
     fun init() {
         btn_control.setOnClickListener { jumpToControl() }
         btn_connect.setOnClickListener { connect() }
+        et_ip.hint = SharedPreferenceUtil.getIpAddress()
         setState(ConnectManager.state)
     }
 
     fun connect() {
+        currentIP = et_ip.text.toString()
         ConnectManager.getInstance().setConnectListener(mConnectListener)
-        ConnectManager.getInstance().configure(et_ip.text.toString(), 9998)
+        ConnectManager.getInstance().configure(currentIP, 9998)
         ConnectManager.getInstance().init()
     }
 
@@ -48,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     private val mConnectListener = object : ConnectManager.ConnectListener {
         override fun onSocketChanged(state: Int) {
+            SharedPreferenceUtil.saveIpAddress(currentIP ?: "")
             setState(state)
         }
 
