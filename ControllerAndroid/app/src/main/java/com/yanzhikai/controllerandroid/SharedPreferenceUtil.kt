@@ -9,7 +9,7 @@ object SharedPreferenceUtil {
     private const val IP_ADDRESS = "ip_address"
 
     private fun getAppSP(): SharedPreferences {
-        return GobalApplication.sContext.getSharedPreferences(APP_SP_NAME, MODE_PRIVATE)
+        return GlobalApplication.context().getSharedPreferences(APP_SP_NAME, MODE_PRIVATE)
     }
 
     fun saveIpAddress(address: String) {

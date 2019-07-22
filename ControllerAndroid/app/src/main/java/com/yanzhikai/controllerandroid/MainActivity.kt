@@ -2,6 +2,7 @@ package com.yanzhikai.controllerandroid
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -24,6 +25,9 @@ class MainActivity : AppCompatActivity() {
 
     fun connect() {
         currentIP = et_ip.text.toString()
+        if (TextUtils.isEmpty(currentIP)) {
+            currentIP = et_ip.hint.toString()
+        }
         ConnectManager.getInstance().setConnectListener(mConnectListener)
         ConnectManager.getInstance().configure(currentIP, 9998)
         ConnectManager.getInstance().init()

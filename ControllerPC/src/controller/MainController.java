@@ -6,10 +6,7 @@ import controller.message.MessageManager;
 import ui.MainFrame;
 
 import javax.swing.*;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -99,7 +96,7 @@ public class MainController {
                     System.out.println("working");
                     String result = mBufferedReader.readLine();
                     if (result != null && result.length() > 0){
-                        mMessageManager.handleMessage(new Message(result));
+                        mMessageManager.handleMessage(mSocket,new Message(result));
                     }else {
                         System.out.println("null result");
                         stopWorking();
